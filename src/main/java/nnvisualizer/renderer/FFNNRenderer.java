@@ -29,7 +29,9 @@ public class FFNNRenderer implements NNRenderer {
 						final Circle endNeuron = neurons[l][n];
 						final Line line = new Line(startNeuron.getCenterX() + startNeuron.getRadius(), startNeuron.getCenterY(),
 												   endNeuron.getCenterX() - endNeuron.getRadius(), endNeuron.getCenterY());
-						line.setStroke(Color.gray(1 - ffNeuralNetwork.getWeights()[l - 1][pn][n])); // TODO: NORMALIZE VALUES
+
+						final double normalizedWeight = ffNeuralNetwork.getWeights()[l - 1][pn][n] / ffNeuralNetwork.getHighestWeightValue();
+						line.setStroke(Color.gray(1 - normalizedWeight));
 						pane.getChildren().add(line);
 					}
 				}

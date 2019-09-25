@@ -9,6 +9,9 @@ public class FFNeuralNetwork implements NeuralNetwork {
 	private double[][] activation;
 	private double[][][] weights;
 
+	private double lowestWeightValue = Double.MAX_VALUE;
+	private double highestWeightValue = Double.MIN_VALUE;
+
 	public static NeuralNetwork[] buildNetworks(final String filePath) {
 		try {
 			final List<String> lines = Files.readAllLines(Paths.get(filePath));
@@ -29,9 +32,15 @@ public class FFNeuralNetwork implements NeuralNetwork {
 				int weightsRead = 0;
 				for (int l = 0; l < layers - 1; l++) {
 					currentNetwork.weights[l] = new double[Integer.parseInt(networkValues[l + 1])][Integer.parseInt(networkValues[l + 2])];
-					for (int n = 0; n < currentNetwork.weights[l].length; n++)
-						for (int nn = 0; nn < currentNetwork.weights[l][n].length; nn++)
+					for (int n = 0; n < currentNetwork.weights[l].length; n++) {
+						for (int nn = 0; nn < currentNetwork.weights[l][n].length; nn++) {
 							currentNetwork.weights[l][n][nn] = Double.parseDouble(networkValues[1 + layers + weightsRead++]);
+							if (currentNetwork.weights[l][n][nn] > currentNetwork.highestWeightValue)
+								currentNetwork.highestWeightValue = currentNetwork.weights[l][n][nn];
+							if (currentNetwork.weights[l][n][nn] < currentNetwork.lowestWeightValue)
+								currentNetwork.lowestWeightValue = currentNetwork.weights[l][n][nn];
+						}
+					}
 				}
 			}
 
@@ -52,5 +61,13 @@ public class FFNeuralNetwork implements NeuralNetwork {
 
 	public double[][][] getWeights() {
 		return weights;
+	}
+
+	public double getHighestWeightValue() {
+		return highestWeightValue;
+	}
+
+	public double getLowestWeightValue() {
+		return lowestWeightValue;
 	}
 }
