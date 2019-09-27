@@ -5,6 +5,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.TextInputDialog;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
@@ -31,6 +32,8 @@ public class Main extends Application {
 	private static NeuralNetwork[] neuralNetworks;
 
 	private int renderedNetwork = 0;
+
+	private int generationStepSize = 1;
 
 	private Pane globalPane, neuralNetworkPane;
 
@@ -86,14 +89,45 @@ public class Main extends Application {
 		stage.setTitle("NNVisualizer");
 	}
 
+	private void renderNetwork() {
+		generationCounter.setText("Generation: " + renderedNetwork);
+		nnRenderer.renderNetwork(neuralNetworkPane, neuralNetworks[renderedNetwork]);
+	}
+
 	private void setupKeyEvents() {
-		scene.setOnKeyReleased(keyEvent -> {
-			if (keyEvent.getCode() == KeyCode.LEFT && renderedNetwork > 0) {
-				nnRenderer.renderNetwork(neuralNetworkPane, neuralNetworks[--renderedNetwork]);
-			} else if (keyEvent.getCode() == KeyCode.RIGHT && renderedNetwork < neuralNetworks.length - 1) {
-				nnRenderer.renderNetwork(neuralNetworkPane, neuralNetworks[++renderedNetwork]);
+		scene.setOnKeyPressed(keyEvent -> {
+			if (keyEvent.getCode() == KeyCode.UP && renderedNetwork - generationStepSize >= 0) {
+				renderedNetwork -= generationStepSize;
+			} else if (keyEvent.getCode() == KeyCode.DOWN && renderedNetwork + generationStepSize < neuralNetworks.length) {
+				renderedNetwork += generationStepSize;
 			}
-			generationCounter.setText("Generation: " + renderedNetwork);
+			renderNetwork();
 		});
+
+		scene.setOnKeyReleased(keyEvent -> {
+			if (keyEvent.getCode() == KeyCode.S) {
+				do {
+					generationStepSize = getInputFromDialog("Step size", "Set the generation step size when using up and down arrows: ");
+				} while (generationStepSize < 0 || generationStepSize >= neuralNetworks.length);
+			}
+
+			if (keyEvent.getCode() == KeyCode.G) {
+				do {
+					renderedNetwork = getInputFromDialog("Go to generation...", "Select the generation you wish to go to: ");
+				} while (renderedNetwork < 0 || renderedNetwork >= neuralNetworks.length);
+				renderNetwork();
+			}
+		});
+	}
+
+	private int getInputFromDialog(final String title, final String headerText) {
+		final TextInputDialog stepSizeDialog = new TextInputDialog();
+		stepSizeDialog.setTitle(title);
+		stepSizeDialog.setHeaderText(headerText);
+		try {
+			return Integer.parseInt(stepSizeDialog.showAndWait().orElse("1"));
+		} catch (NumberFormatException ignored) {
+			return -1;
+		}
 	}
 }
